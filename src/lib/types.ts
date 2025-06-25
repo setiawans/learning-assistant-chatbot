@@ -4,10 +4,16 @@ export interface Message {
     content: string;
     timestamp: Date;
     isLoading?: boolean;
+    image?: string;
 }
 
 export interface ChatState {
     messages: Message[];
     isTyping: boolean;
     input: string;
+}
+
+export interface ChatRequest {
+    message: string;
+    image?: string;
 }

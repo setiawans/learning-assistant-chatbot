@@ -4,7 +4,7 @@ import { SYSTEM_PROMPT } from "@/lib/prompts";
 
 export async function POST(request: Request) {
   try {
-    const { message } = await request.json();
+    const { message, image } = await request.json();
 
     if (!message || typeof message !== "string") {
       return NextResponse.json(
@@ -21,11 +21,25 @@ export async function POST(request: Request) {
     }
 
     const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-    const result = await model.generateContent(
-      `${SYSTEM_PROMPT}\n\nUser message: ${message}`
-    );
+    const parts: any[] = [
+      { text: `${SYSTEM_PROMPT}\n\nUser message: ${message}` }
+    ];
+
+    if (image) {
+      const [mimeData, base64Data] = image.split(',');
+      const mimeType = mimeData.match(/:(.*?);/)?.[1] || 'image/jpeg';
+      
+      parts.push({
+        inlineData: {
+          mimeType: mimeType,
+          data: base64Data
+        }
+      });
+    }
+
+    const result = await model.generateContent(parts);
     const response = await result.response;
     const text = response.text();
 
