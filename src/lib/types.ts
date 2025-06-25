@@ -17,3 +17,8 @@ export interface ChatRequest {
     message: string;
     image?: string;
 }
+
+export interface FileValidationResult {
+  valid: boolean;
+  error?: string;
+}
