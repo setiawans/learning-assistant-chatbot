@@ -95,7 +95,7 @@ function parseImageData(image: string): ParsedImageData | null {
       return null;
     }
 
-    const mimeMatch = mimeData.match(/:(.*?);/);
+    const mimeMatch = mimeData.match(/^data:([^;]+);/);
     if (!mimeMatch) {
       return null;
     }
