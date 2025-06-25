@@ -24,3 +24,41 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.scrollbar-custom {
+  scrollbar-width: none;
+  scrollbar-color: transparent transparent;
+  scroll-behavior: smooth;
+}
+
+.scrollbar-custom::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+
+.scrollbar-custom::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 3px;
+}
+
+.scrollbar-custom:hover {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(71 85 105) transparent;
+}
+
+.scrollbar-custom:hover::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-custom:hover::-webkit-scrollbar-thumb {
+  background: rgb(71 85 105);
+  transition: background-color 0.2s ease;
+}
+
+.scrollbar-custom:hover::-webkit-scrollbar-thumb:hover {
+  background: rgb(100 116 139);
+}
