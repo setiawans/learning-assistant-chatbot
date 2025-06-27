@@ -14,7 +14,7 @@ export default function ChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { sendMessage, isStreaming, error } = useStreamingChat(
+  const { sendMessage, retryMessage, isStreaming, error } = useStreamingChat(
     messages,
     setMessages,
     setIsTyping
@@ -54,6 +54,10 @@ export default function ChatPage() {
     fileInputRef.current?.click();
   };
 
+  const handleRetry = (userContent: string, userImage?: string) => {
+    retryMessage(userContent, userImage);
+  };
+
   return (
     <div className="h-screen flex flex-col bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
       {error && (
@@ -64,7 +68,7 @@ export default function ChatPage() {
 
       {messages.length === 0 ? (
         <div className="flex-1 flex items-center justify-center">
-          <WelcomeScreen 
+          <WelcomeScreen
             onSuggestionClick={handleSuggestionClick}
             onImageSelect={handleImageSelect}
           />
@@ -74,7 +78,12 @@ export default function ChatPage() {
           <div className="max-w-4xl mx-auto px-4 py-4">
             <div className="space-y-6">
               {messages.map((message) => (
-                <ChatMessage key={message.id} message={message} />
+                <ChatMessage
+                  key={message.id}
+                  message={message}
+                  messages={messages}
+                  onRetry={message.role === 'assistant' ? handleRetry : undefined}
+                />
               ))}
               {isTyping && <TypingIndicator />}
               <div ref={messagesEndRef} />
@@ -83,7 +92,7 @@ export default function ChatPage() {
         </div>
       )}
 
-      <ChatInput 
+      <ChatInput
         onSendMessage={handleSendMessage}
         disabled={isStreaming}
       />

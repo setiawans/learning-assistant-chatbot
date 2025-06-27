@@ -14,6 +14,7 @@ interface StreamingResponse {
 
 interface UseStreamingChatReturn {
   sendMessage: (content: string, image?: string) => Promise<void>;
+  retryMessage: (userContent: string, userImage?: string) => Promise<void>;
   isStreaming: boolean;
   error: string | null;
   clearError: () => void;
@@ -26,26 +27,15 @@ export function useStreamingChat(
 ): UseStreamingChatReturn {
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lastUserMessage, setLastUserMessage] = useState<{ content: string; image?: string } | null>(null);
 
   const clearError = useCallback(() => {
     setError(null);
   }, []);
 
-  const sendMessage = useCallback(async (content: string, image?: string) => {
-    if (!content.trim() && !image) return;
-
+  const performRequest = useCallback(async (content: string, image?: string) => {
     setError(null);
     setIsStreaming(false);
-
-    const userMessage: Message = {
-      id: generateId(),
-      role: 'user',
-      content,
-      image,
-      timestamp: new Date()
-    };
-
-    setMessages(prev => [...prev, userMessage]);
     setIsTyping(true);
 
     let assistantMessageId: string | null = null;
@@ -113,7 +103,7 @@ export function useStreamingChat(
                 if (assistantMessageId) {
                   setMessages(prev => prev.map(msg => 
                     msg.id === assistantMessageId 
-                      ? { 
+                      ?                         { 
                           ...msg, 
                           content: data.content || '',
                           timestamp: new Date(data.timestamp || new Date().toISOString()),
@@ -159,8 +149,40 @@ export function useStreamingChat(
     }
   }, [setMessages, setIsTyping]);
 
+  const sendMessage = useCallback(async (content: string, image?: string) => {
+    if (!content.trim() && !image) return;
+
+    const userMessage: Message = {
+      id: generateId(),
+      role: 'user',
+      content,
+      image,
+      timestamp: new Date()
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setLastUserMessage({ content, image });
+    
+    await performRequest(content, image);
+  }, [setMessages, performRequest]);
+
+  const retryMessage = useCallback(async (userContent: string, userImage?: string) => {
+    const userMessage: Message = {
+      id: generateId(),
+      role: 'user',
+      content: userContent,
+      image: userImage,
+      timestamp: new Date()
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    
+    await performRequest(userContent, userImage);
+  }, [performRequest, setMessages]);
+
   return {
     sendMessage,
+    retryMessage,
     isStreaming,
     error,
     clearError
