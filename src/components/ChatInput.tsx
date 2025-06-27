@@ -23,7 +23,22 @@ export default function ChatInput({ onSendMessage, disabled = false }: ChatInput
     setInputText('');
     setSelectedImage(null);
     clearError();
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+    }
   }, [clearError]);
+
+  const adjustTextareaHeight = useCallback(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    textarea.style.height = 'auto';
+    const scrollHeight = textarea.scrollHeight;
+    const maxHeight = window.innerWidth < 768 ? 200 : 300;
+    const newHeight = Math.min(scrollHeight, maxHeight);
+    
+    textarea.style.height = `${newHeight}px`;
+  }, []);
 
   const handleSend = useCallback(() => {
     if (!inputText.trim() && !selectedImage) return;
@@ -111,15 +126,26 @@ export default function ChatInput({ onSendMessage, disabled = false }: ChatInput
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputText(e.target.value);
     if (error) clearError();
-  }, [error, clearError]);
+    setTimeout(adjustTextareaHeight, 0);
+  }, [error, clearError, adjustTextareaHeight]);
 
   useEffect(() => {
     const textarea = textareaRef.current;
     if (!textarea) return;
 
     textarea.addEventListener('paste', handlePaste);
-    return () => textarea.removeEventListener('paste', handlePaste);
-  }, [handlePaste]);
+    const handleResize = () => adjustTextareaHeight();
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      textarea.removeEventListener('paste', handlePaste);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [handlePaste, adjustTextareaHeight]);
+
+  useEffect(() => {
+    adjustTextareaHeight();
+  }, [inputText, adjustTextareaHeight]);
 
   const isSubmitDisabled = disabled || (!inputText.trim() && !selectedImage);
   const borderClass = isDragOver 
@@ -153,7 +179,7 @@ export default function ChatInput({ onSendMessage, disabled = false }: ChatInput
                 onChange={handleInputChange}
                 onKeyPress={handleKeyPress}
                 placeholder="Lagi butuh bantuan apa sobat? Jangan masukkan data pribadi kamu yaa!"
-                className="w-full bg-transparent text-white placeholder-slate-400 resize-none focus:outline-none min-h-[24px] max-h-32"
+                className="w-full bg-transparent text-white placeholder-slate-400 resize-none focus:outline-none min-h-[24px] max-h-[200px] md:max-h-[300px] overflow-y-auto scrollbar-custom pr-2"
                 rows={1}
                 disabled={disabled}
                 maxLength={CHAT_CONFIG.MAX_MESSAGE_LENGTH}
