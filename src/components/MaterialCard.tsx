@@ -1,6 +1,5 @@
 import { ExternalLink, PlayCircle, BookOpen, FileText, GraduationCap, PenTool } from 'lucide-react';
 import { Material } from '@/lib/types';
-import Image from 'next/image';
 import { useState } from 'react';
 
 interface MaterialCardProps {
@@ -32,6 +31,13 @@ export default function MaterialCard({ material }: MaterialCardProps) {
         window.open(material.url, '_blank', 'noopener,noreferrer');
     };
 
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleClick();
+        }
+    };
+
     const shouldShowImage = material.thumbnail_url &&
         material.thumbnail_url !== 'thumbnail.jpg' &&
         !imageError;
@@ -39,16 +45,18 @@ export default function MaterialCard({ material }: MaterialCardProps) {
     return (
         <div
             onClick={handleClick}
-            className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-4 hover:bg-slate-700/50 hover:border-cyan-500/50 transition-all duration-300 cursor-pointer group"
+            onKeyDown={handleKeyDown}
+            tabIndex={0}
+            role="button"
+            aria-label={`Open ${material.title} - ${material.type}`}
+            className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-4 hover:bg-slate-700/50 hover:border-cyan-500/50 transition-all duration-300 cursor-pointer group focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
         >
             <div className="flex gap-3">
                 <div className="flex-shrink-0 w-16 h-16 bg-slate-700 rounded-lg overflow-hidden relative">
                     {shouldShowImage ? (
-                        <Image
+                        <img
                             src={material.thumbnail_url!}
                             alt={`Thumbnail for ${material.title}`}
-                            width={64}
-                            height={64}
                             className="w-full h-full object-cover"
                             onError={() => setImageError(true)}
                         />
