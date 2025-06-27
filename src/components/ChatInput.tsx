@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { Send, Image as ImageIcon, X } from 'lucide-react';
 import { validateImageFile, fileToBase64 } from '@/lib/utils';
 import { CHAT_CONFIG, ERROR_MESSAGES } from '@/lib/constants';
@@ -15,6 +15,7 @@ export default function ChatInput({ onSendMessage, disabled = false }: ChatInput
   const [isDragOver, setIsDragOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const clearError = useCallback(() => setError(null), []);
   
@@ -59,6 +60,23 @@ export default function ChatInput({ onSendMessage, disabled = false }: ChatInput
     }
   }, [clearError]);
 
+  const handlePaste = useCallback(async (e: ClipboardEvent) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (item.type.startsWith('image/')) {
+        e.preventDefault();
+        const file = item.getAsFile();
+        if (file) {
+          await handleImageSelect(file);
+        }
+        break;
+      }
+    }
+  }, [handleImageSelect]);
+
   const handleFileInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) handleImageSelect(file);
@@ -95,6 +113,14 @@ export default function ChatInput({ onSendMessage, disabled = false }: ChatInput
     if (error) clearError();
   }, [error, clearError]);
 
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    textarea.addEventListener('paste', handlePaste);
+    return () => textarea.removeEventListener('paste', handlePaste);
+  }, [handlePaste]);
+
   const isSubmitDisabled = disabled || (!inputText.trim() && !selectedImage);
   const borderClass = isDragOver 
     ? 'border-cyan-400 bg-slate-700/80' 
@@ -122,6 +148,7 @@ export default function ChatInput({ onSendMessage, disabled = false }: ChatInput
 
             <div className="flex-1">
               <textarea
+                ref={textareaRef}
                 value={inputText}
                 onChange={handleInputChange}
                 onKeyPress={handleKeyPress}
