@@ -63,7 +63,8 @@ export default function ChatPage() {
         id: generateId(),
         role: 'assistant',
         content: data.message,
-        timestamp: new Date(data.timestamp)
+        timestamp: new Date(data.timestamp),
+        materials: data.materials || undefined
       };
 
       setTimeout(() => {

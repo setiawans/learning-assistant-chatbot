@@ -1,8 +1,9 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
-import { SYSTEM_PROMPT } from "@/lib/prompts";
+import { SYSTEM_PROMPT, createSystemPromptWithMaterials } from "@/lib/prompts";
 import { ERROR_MESSAGES, IMAGE_CONFIG } from "@/lib/constants";
 import { ChatRequest } from "@/lib/types";
+import { analyzeMaterialRequest, fetchMaterials } from "@/lib/materials";
 import {
   GeminiPart,
   ChatApiResponse,
@@ -37,11 +38,30 @@ export async function POST(
     }
 
     const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
+
+    const materialAnalysis = await analyzeMaterialRequest(message, genAI);
+    let materials = null;
+
+    if (materialAnalysis.isRequest) {
+      materials = await fetchMaterials(
+        materialAnalysis.subject,
+        materialAnalysis.type
+      );
+    }
+
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+
+    const systemPromptWithContext =
+      materials && materials.length > 0
+        ? createSystemPromptWithMaterials(
+            materials,
+            materialAnalysis.subject || "ekonomi"
+          )
+        : SYSTEM_PROMPT;
 
     const parts: GeminiPart[] = [
       {
-        text: `${SYSTEM_PROMPT}\n\nUser message: ${message.trim()}`,
+        text: `${systemPromptWithContext}\n\nUser message: ${message.trim()}`,
       },
     ];
 
@@ -73,10 +93,16 @@ export async function POST(
       );
     }
 
-    return NextResponse.json({
+    const apiResponse: ChatApiResponse = {
       message: text.trim(),
       timestamp: new Date().toISOString(),
-    });
+    };
+
+    if (materials && materials.length > 0) {
+      apiResponse.materials = materials;
+    }
+
+    return NextResponse.json(apiResponse);
   } catch (error) {
     console.error("API Error:", error);
     return handleApiError(error);
