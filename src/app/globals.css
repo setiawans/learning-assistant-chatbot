@@ -33,6 +33,7 @@ body {
 
 .scrollbar-custom::-webkit-scrollbar {
   width: 6px;
+  height: 6px; 
 }
 
 .scrollbar-custom::-webkit-scrollbar-track {
@@ -47,4 +48,29 @@ body {
 
 .scrollbar-custom::-webkit-scrollbar-thumb:hover {
   background: rgb(100 116 139);
+}
+
+@media (max-width: 768px) {
+  .scrollbar-custom {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .scrollbar-custom::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
