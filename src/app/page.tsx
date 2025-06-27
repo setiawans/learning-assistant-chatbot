@@ -11,6 +11,7 @@ import ChatInput from '@/components/ChatInput';
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
+  const [selectedImageFromWelcome, setSelectedImageFromWelcome] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -41,7 +42,7 @@ export default function ChatPage() {
     const reader = new FileReader();
     reader.onload = (event) => {
       const imageData = event.target?.result as string;
-      handleSendMessage('', imageData);
+      setSelectedImageFromWelcome(imageData);
     };
     reader.readAsDataURL(file);
   };
@@ -86,8 +87,8 @@ export default function ChatPage() {
                 />
               ))}
               {isTyping && <TypingIndicator />}
-              <div ref={messagesEndRef} />
             </div>
+            <div ref={messagesEndRef} />
           </div>
         </div>
       )}
@@ -95,6 +96,8 @@ export default function ChatPage() {
       <ChatInput
         onSendMessage={handleSendMessage}
         disabled={isStreaming}
+        initialImage={selectedImageFromWelcome}
+        onImageCleared={() => setSelectedImageFromWelcome(null)}
       />
 
       <input

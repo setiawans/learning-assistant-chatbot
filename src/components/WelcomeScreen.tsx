@@ -39,7 +39,7 @@ export default function WelcomeScreen({ onSuggestionClick, onImageSelect }: Welc
           className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl font-medium hover:from-blue-500 hover:to-purple-500 transition-all duration-300 transform hover:scale-105 flex items-center gap-2"
         >
           <Upload className="w-4 h-4" />
-          Select Image
+          Foto Soal
         </button>
       </div>
 

@@ -7,15 +7,28 @@ import Image from 'next/image';
 interface ChatInputProps {
   onSendMessage: (message: string, image?: string) => void;
   disabled?: boolean;
+  initialImage?: string | null;
+  onImageCleared?: () => void;
 }
 
-export default function ChatInput({ onSendMessage, disabled = false }: ChatInputProps) {
+export default function ChatInput({ 
+  onSendMessage, 
+  disabled = false, 
+  initialImage = null,
+  onImageCleared
+}: ChatInputProps) {
   const [inputText, setInputText] = useState('');
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(initialImage);
   const [isDragOver, setIsDragOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (initialImage) {
+      setSelectedImage(initialImage);
+    }
+  }, [initialImage]);
 
   const clearError = useCallback(() => setError(null), []);
   
@@ -26,7 +39,10 @@ export default function ChatInput({ onSendMessage, disabled = false }: ChatInput
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
     }
-  }, [clearError]);
+    if (onImageCleared) {
+      onImageCleared();
+    }
+  }, [clearError, onImageCleared]);
 
   const adjustTextareaHeight = useCallback(() => {
     const textarea = textareaRef.current;
@@ -117,7 +133,10 @@ export default function ChatInput({ onSendMessage, disabled = false }: ChatInput
   const removeImage = useCallback(() => {
     setSelectedImage(null);
     clearError();
-  }, [clearError]);
+    if (onImageCleared) {
+      onImageCleared();
+    }
+  }, [clearError, onImageCleared]);
 
   const openFileDialog = useCallback(() => {
     fileInputRef.current?.click();

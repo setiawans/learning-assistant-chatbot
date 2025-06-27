@@ -15,14 +15,14 @@ export async function POST(request: Request): Promise<NextResponse | Response> {
     const body: ChatRequest = await request.json();
     const { message, image } = body;
 
-    if (!message || typeof message !== "string" || message.trim().length === 0) {
+    if (!image && (!message || typeof message !== "string" || message.trim().length === 0)) {
       return NextResponse.json(
         { error: ERROR_MESSAGES.INVALID_MESSAGE },
         { status: 400 }
       );
     }
 
-    if (message.length > CHAT_CONFIG.MAX_MESSAGE_LENGTH) {
+    if (message && message.length > CHAT_CONFIG.MAX_MESSAGE_LENGTH) {
       return NextResponse.json(
         { 
           error: `Pesan terlalu panjang. Maksimal ${CHAT_CONFIG.MAX_MESSAGE_LENGTH} karakter. Anda mengirim ${message.length} karakter.` 
@@ -31,13 +31,7 @@ export async function POST(request: Request): Promise<NextResponse | Response> {
       );
     }
 
-    const trimmedMessage = message.trim();
-    if (trimmedMessage.length === 0) {
-      return NextResponse.json(
-        { error: ERROR_MESSAGES.EMPTY_AFTER_TRIM },
-        { status: 400 }
-      );
-    }
+    const trimmedMessage = message ? message.trim() : "";
 
     if (!process.env.GOOGLE_API_KEY) {
       console.error("Google API key is not configured");
@@ -64,7 +58,7 @@ export async function POST(request: Request): Promise<NextResponse | Response> {
       : SYSTEM_PROMPT;
 
     const parts: GeminiPart[] = [
-      { text: `${systemPromptWithContext}\n\nUser message: ${trimmedMessage}` },
+      { text: `${systemPromptWithContext}\n\nUser message: ${trimmedMessage || "Please analyze this image."}` },
     ];
 
     if (image) {
