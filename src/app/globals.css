@@ -74,3 +74,75 @@ body {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+.math-content .katex-block {
+  margin: 1em 0;
+  text-align: center;
+  overflow-x: auto;
+  padding: 0.5em;
+}
+
+.math-content .katex-inline {
+  display: inline;
+}
+
+.math-content .katex-error {
+  color: #cc0000;
+  background-color: rgba(204, 0, 0, 0.1);
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 0.9em;
+}
+
+.math-content .katex {
+  font-size: 1em;
+}
+
+.math-content .katex-display {
+  margin: 1em 0;
+}
+
+.math-content .katex .base {
+  color: inherit;
+}
+
+.math-content .katex .mord,
+.math-content .katex .mrel,
+.math-content .katex .mbin,
+.math-content .katex .mop,
+.math-content .katex .mopen,
+.math-content .katex .mclose,
+.math-content .katex .mpunct {
+  color: inherit;
+}
+
+.math-content strong {
+  font-weight: 600;
+  color: #f1f5f9;
+}
+
+.math-content em {
+  font-style: italic;
+  color: #cbd5e1;
+}
+
+.math-content code {
+  background-color: rgba(148, 163, 184, 0.1);
+  color: #f8fafc;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 0.9em;
+}
+
+@media (max-width: 768px) {
+  .math-content .katex-block {
+    font-size: 0.9em;
+    padding: 0.25em;
+  }
+  
+  .math-content .katex-display {
+    margin: 0.5em 0;
+  }
+}

@@ -1,8 +1,11 @@
+'use client';
+
 import { Bot, User, Copy, RotateCcw, Check } from 'lucide-react';
 import { useState } from 'react';
 import { Message } from '@/lib/types';
 import MaterialCard from './MaterialCard';
 import Image from 'next/image';
+import MathRenderer from './MathRenderer';
 
 interface ChatMessageProps {
   message: Message;
@@ -69,7 +72,15 @@ export default function ChatMessage({ message, messages, onRetry }: ChatMessageP
               />
             </div>
           )}
-          <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+          
+          {isUser ? (
+            <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+          ) : (
+            <MathRenderer 
+              content={message.content} 
+              className="text-sm leading-relaxed"
+            />
+          )}
         </div>
 
         {!isUser && (
