@@ -1,7 +1,8 @@
 import { useState, useRef, useCallback } from 'react';
-import { Send, Image, X } from 'lucide-react';
+import { Send, Image as ImageIcon, X } from 'lucide-react';
 import { validateImageFile, fileToBase64 } from '@/lib/utils';
 import { CHAT_CONFIG, ERROR_MESSAGES } from '@/lib/constants';
+import Image from 'next/image';
 
 interface ChatInputProps {
   onSendMessage: (message: string, image?: string) => void;
@@ -156,10 +157,12 @@ export default function ChatInput({ onSendMessage, disabled = false }: ChatInput
 const ImagePreview = ({ src, onRemove }: { src: string; onRemove: () => void }) => (
   <div className="mb-4 flex justify-center">
     <div className="relative inline-block">
-      <img 
+      <Image 
         src={src} 
         alt="Selected image preview" 
-        className="max-w-xs max-h-32 rounded-lg border border-slate-600"
+        width={200}
+        height={128}
+        className="max-w-xs max-h-32 rounded-lg border border-slate-600 object-contain"
       />
       <button
         onClick={onRemove}
@@ -179,7 +182,7 @@ const ImageUploadButton = ({ onClick, disabled }: { onClick: () => void; disable
     disabled={disabled}
     aria-label="Upload image"
   >
-    <Image className="w-5 h-5 text-slate-400" />
+    <ImageIcon className="w-5 h-5 text-slate-400" />
   </button>
 );
 

@@ -1,6 +1,7 @@
 import { ExternalLink, PlayCircle, BookOpen, FileText, GraduationCap, PenTool } from 'lucide-react';
 import { Material } from '@/lib/types';
-import { getMaterialThumbnail } from '@/lib/materials';
+import Image from 'next/image';
+import { useState } from 'react';
 
 interface MaterialCardProps {
     material: Material;
@@ -25,10 +26,15 @@ const typeColors = {
 export default function MaterialCard({ material }: MaterialCardProps) {
     const IconComponent = typeIcons[material.type];
     const typeColorClass = typeColors[material.type];
+    const [imageError, setImageError] = useState(false);
 
     const handleClick = () => {
         window.open(material.url, '_blank', 'noopener,noreferrer');
     };
+
+    const shouldShowImage = material.thumbnail_url &&
+        material.thumbnail_url !== 'thumbnail.jpg' &&
+        !imageError;
 
     return (
         <div
@@ -36,15 +42,15 @@ export default function MaterialCard({ material }: MaterialCardProps) {
             className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-4 hover:bg-slate-700/50 hover:border-cyan-500/50 transition-all duration-300 cursor-pointer group"
         >
             <div className="flex gap-3">
-                <div className="flex-shrink-0 w-16 h-16 bg-slate-700 rounded-lg overflow-hidden">
-                    {material.thumbnail_url && material.thumbnail_url !== 'thumbnail.jpg' ? (
-                        <img
-                            src={material.thumbnail_url}
-                            alt={material.title}
+                <div className="flex-shrink-0 w-16 h-16 bg-slate-700 rounded-lg overflow-hidden relative">
+                    {shouldShowImage ? (
+                        <Image
+                            src={material.thumbnail_url!}
+                            alt={`Thumbnail for ${material.title}`}
+                            width={64}
+                            height={64}
                             className="w-full h-full object-cover"
-                            onError={(e) => {
-                                e.currentTarget.style.display = 'none';
-                            }}
+                            onError={() => setImageError(true)}
                         />
                     ) : (
                         <div className="w-full h-full flex items-center justify-center">

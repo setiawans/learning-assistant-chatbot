@@ -1,6 +1,7 @@
 import { Bot, User } from 'lucide-react';
 import { Message } from '@/lib/types';
 import MaterialCard from './MaterialCard';
+import Image from 'next/image';
 
 interface ChatMessageProps {
   message: Message;
@@ -31,11 +32,14 @@ export default function ChatMessage({ message }: ChatMessageProps) {
             : 'bg-slate-800/70 backdrop-blur-sm border border-slate-700/50 text-slate-100'
           } ${isUser ? 'rounded-br-md' : 'rounded-bl-md'}`}>
           {message.image && (
-            <div className="mb-3">
-              <img
+            <div className="mb-3 relative">
+              <Image
                 src={message.image}
                 alt="User uploaded image"
+                width={300}
+                height={200}
                 className="max-w-full h-auto rounded-lg border border-slate-600/50"
+                style={{ objectFit: 'contain' }}
               />
             </div>
           )}

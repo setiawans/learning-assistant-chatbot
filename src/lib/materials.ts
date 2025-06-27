@@ -49,7 +49,7 @@ export async function fetchMaterials(
       query = query.ilike("subject", `%${subject}%`);
     }
 
-    if (type && MATERIALS_CONFIG.AVAILABLE_TYPES.includes(type as any)) {
+    if (type && MATERIALS_CONFIG.AVAILABLE_TYPES.includes(type as Material['type'])) {
       query = query.eq("type", type);
     }
 
@@ -65,20 +65,4 @@ export async function fetchMaterials(
     console.error("Error in fetchMaterials:", error);
     return null;
   }
-}
-
-export function getMaterialThumbnail(material: Material): string {
-  if (material.thumbnail_url) {
-    return material.thumbnail_url;
-  }
-
-  const fallbacks = {
-    video: "/icons/video-icon.png",
-    article: "/icons/article-icon.png",
-    book: "/icons/book-icon.png",
-    course: "/icons/course-icon.png",
-    exercise: "/icons/exercise-icon.png",
-  };
-
-  return fallbacks[material.type] || "/icons/default-material.png";
 }

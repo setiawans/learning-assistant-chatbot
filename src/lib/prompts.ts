@@ -1,3 +1,5 @@
+import { Material } from "./types";
+
 export const SYSTEM_PROMPT = `You are "Copilot", a helpful Learning Assistant designed to help users learn anything they want to learn.
 
 Your role:
@@ -36,7 +38,7 @@ Guidelines:
 - "Gimana cara belajar ekonomi?" → {"isRequest": true, "subject": "ekonomi", "type": null}
 - "Ada soal latihan ekonomi?" → {"isRequest": true, "subject": "ekonomi", "type": "exercise"}`;
 
-export const createSystemPromptWithMaterials = (materials: any[], subject: string): string => {
+export const createSystemPromptWithMaterials = (materials: Material[], subject: string): string => {
   return `${SYSTEM_PROMPT}
 
 Available materials for ${subject}:
