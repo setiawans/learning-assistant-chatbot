@@ -6,23 +6,16 @@ import { ChatRequest } from "@/lib/types";
 import { analyzeMaterialRequest, fetchMaterials } from "@/lib/materials";
 import {
   GeminiPart,
-  ChatApiResponse,
   ApiErrorResponse,
   ParsedImageData,
 } from "@/lib/api-types";
 
-export async function POST(
-  request: Request
-): Promise<NextResponse<ChatApiResponse | ApiErrorResponse>> {
+export async function POST(request: Request): Promise<NextResponse | Response> {
   try {
     const body: ChatRequest = await request.json();
     const { message, image } = body;
 
-    if (
-      !message ||
-      typeof message !== "string" ||
-      message.trim().length === 0
-    ) {
+    if (!message || typeof message !== "string" || message.trim().length === 0) {
       return NextResponse.json(
         { error: ERROR_MESSAGES.INVALID_MESSAGE },
         { status: 400 }
@@ -55,7 +48,6 @@ export async function POST(
     }
 
     const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
-
     const materialAnalysis = await analyzeMaterialRequest(trimmedMessage, genAI);
     let materials = null;
 
@@ -67,19 +59,12 @@ export async function POST(
     }
 
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-
-    const systemPromptWithContext =
-      materials && materials.length > 0
-        ? createSystemPromptWithMaterials(
-            materials,
-            materialAnalysis.subject || "ekonomi"
-          )
-        : SYSTEM_PROMPT;
+    const systemPromptWithContext = materials && materials.length > 0
+      ? createSystemPromptWithMaterials(materials, materialAnalysis.subject || "ekonomi")
+      : SYSTEM_PROMPT;
 
     const parts: GeminiPart[] = [
-      {
-        text: `${systemPromptWithContext}\n\nUser message: ${trimmedMessage}`,
-      },
+      { text: `${systemPromptWithContext}\n\nUser message: ${trimmedMessage}` },
     ];
 
     if (image) {
@@ -99,27 +84,59 @@ export async function POST(
       }
     }
 
-    const result = await model.generateContent(parts);
-    const response = await result.response;
-    const text = response.text();
+    const result = await model.generateContentStream(parts);
 
-    if (!text || text.trim().length === 0) {
-      return NextResponse.json(
-        { error: ERROR_MESSAGES.NO_AI_RESPONSE },
-        { status: 500 }
-      );
-    }
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          let fullText = '';
+          
+          for await (const chunk of result.stream) {
+            const chunkText = chunk.text();
+            if (chunkText) {
+              fullText += chunkText;
+              
+              const data = JSON.stringify({
+                type: 'content',
+                content: chunkText,
+                fullContent: fullText,
+                materials: materials && materials.length > 0 ? materials : undefined
+              });
+              
+              controller.enqueue(encoder.encode(`data: ${data}\n\n`));
+            }
+          }
 
-    const apiResponse: ChatApiResponse = {
-      message: text.trim(),
-      timestamp: new Date().toISOString(),
-    };
+          const finalData = JSON.stringify({
+            type: 'done',
+            content: fullText,
+            timestamp: new Date().toISOString(),
+            materials: materials && materials.length > 0 ? materials : undefined
+          });
+          
+          controller.enqueue(encoder.encode(`data: ${finalData}\n\n`));
+          controller.close();
+        } catch (error) {
+          console.error('Streaming error:', error);
+          const errorData = JSON.stringify({
+            type: 'error',
+            error: ERROR_MESSAGES.SERVER_ERROR
+          });
+          controller.enqueue(encoder.encode(`data: ${errorData}\n\n`));
+          controller.close();
+        }
+      },
+    });
 
-    if (materials && materials.length > 0) {
-      apiResponse.materials = materials;
-    }
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+      },
+    });
 
-    return NextResponse.json(apiResponse);
   } catch (error) {
     console.error("API Error:", error);
     return handleApiError(error);
@@ -159,8 +176,7 @@ function handleApiError(error: unknown): NextResponse<ApiErrorResponse> {
   return NextResponse.json(
     {
       error: ERROR_MESSAGES.SERVER_ERROR,
-      details:
-        process.env.NODE_ENV === "development" ? String(error) : undefined,
+      details: process.env.NODE_ENV === "development" ? String(error) : undefined,
     },
     { status: 500 }
   );
