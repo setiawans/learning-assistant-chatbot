@@ -27,7 +27,6 @@ export function useStreamingChat(
 ): UseStreamingChatReturn {
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [lastUserMessage, setLastUserMessage] = useState<{ content: string; image?: string } | null>(null);
 
   const clearError = useCallback(() => {
     setError(null);
@@ -161,7 +160,6 @@ export function useStreamingChat(
     };
 
     setMessages(prev => [...prev, userMessage]);
-    setLastUserMessage({ content, image });
     
     await performRequest(content, image);
   }, [setMessages, performRequest]);
