@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
 import { SYSTEM_PROMPT, createSystemPromptWithMaterials } from "@/lib/prompts";
-import { ERROR_MESSAGES, IMAGE_CONFIG } from "@/lib/constants";
+import { ERROR_MESSAGES, IMAGE_CONFIG, CHAT_CONFIG } from "@/lib/constants";
 import { ChatRequest } from "@/lib/types";
 import { analyzeMaterialRequest, fetchMaterials } from "@/lib/materials";
 import {
@@ -29,6 +29,23 @@ export async function POST(
       );
     }
 
+    if (message.length > CHAT_CONFIG.MAX_MESSAGE_LENGTH) {
+      return NextResponse.json(
+        { 
+          error: `Pesan terlalu panjang. Maksimal ${CHAT_CONFIG.MAX_MESSAGE_LENGTH} karakter. Anda mengirim ${message.length} karakter.` 
+        },
+        { status: 400 }
+      );
+    }
+
+    const trimmedMessage = message.trim();
+    if (trimmedMessage.length === 0) {
+      return NextResponse.json(
+        { error: ERROR_MESSAGES.EMPTY_AFTER_TRIM },
+        { status: 400 }
+      );
+    }
+
     if (!process.env.GOOGLE_API_KEY) {
       console.error("Google API key is not configured");
       return NextResponse.json(
@@ -39,7 +56,7 @@ export async function POST(
 
     const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
 
-    const materialAnalysis = await analyzeMaterialRequest(message, genAI);
+    const materialAnalysis = await analyzeMaterialRequest(trimmedMessage, genAI);
     let materials = null;
 
     if (materialAnalysis.isRequest) {
@@ -61,7 +78,7 @@ export async function POST(
 
     const parts: GeminiPart[] = [
       {
-        text: `${systemPromptWithContext}\n\nUser message: ${message.trim()}`,
+        text: `${systemPromptWithContext}\n\nUser message: ${trimmedMessage}`,
       },
     ];
 

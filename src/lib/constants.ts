@@ -29,6 +29,7 @@ export const ERROR_MESSAGES = {
   INVALID_API_KEY: 'Konfigurasi API tidak valid',
   NO_AI_RESPONSE: 'Tidak ada respons dari AI',
   MATERIALS_FETCH_ERROR: 'Gagal mengambil data materi',
+  EMPTY_AFTER_TRIM: 'Pesan tidak boleh kosong atau hanya berisi spasi',
 } as const;
 
 export const SUCCESS_MESSAGES = {
