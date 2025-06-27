@@ -32,6 +32,7 @@ const MathRenderer = ({ content, className = '' }: MathRendererProps) => {
           });
           return `<div class="katex-block">${rendered}</div>`;
         } catch (error) {
+          console.warn('KaTeX rendering error for display math:', expression, error);
           return `<div class="katex-error">Math Error: ${expression}</div>`;
         }
       });
@@ -47,6 +48,7 @@ const MathRenderer = ({ content, className = '' }: MathRendererProps) => {
           });
           return `<span class="katex-inline">${rendered}</span>`;
         } catch (error) {
+          console.warn('KaTeX rendering error for inline math:', expression, error);
           return `<span class="katex-error">Math Error: ${expression}</span>`;
         }
       });
