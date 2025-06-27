@@ -76,7 +76,7 @@ export default function ChatPage() {
               {messages.map((message) => (
                 <ChatMessage key={message.id} message={message} />
               ))}
-              {isTyping && <TypingIndicator isStreaming={isStreaming} />}
+              {isTyping && <TypingIndicator />}
               <div ref={messagesEndRef} />
             </div>
           </div>

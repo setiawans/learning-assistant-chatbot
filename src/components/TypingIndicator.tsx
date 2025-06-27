@@ -1,8 +1,4 @@
-interface TypingIndicatorProps {
-  isStreaming?: boolean;
-}
-
-export default function TypingIndicator({ isStreaming = false }: TypingIndicatorProps) {
+export default function TypingIndicator() {
   return (
     <div className="flex justify-center items-center py-8">
       <div className="flex items-center gap-3">

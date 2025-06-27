@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Message } from '@/lib/types';
+import { Message, Material } from '@/lib/types';
 import { generateId } from '@/lib/utils';
 import { API_ENDPOINTS, ERROR_MESSAGES } from '@/lib/constants';
 
@@ -8,7 +8,7 @@ interface StreamingResponse {
   content?: string;
   fullContent?: string;
   timestamp?: string;
-  materials?: any[];
+  materials?: Material[];
   error?: string;
 }
 
