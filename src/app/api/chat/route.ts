@@ -1,6 +1,9 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextResponse } from "next/server";
-import { SYSTEM_PROMPT, createSystemPromptWithMaterials } from "@/lib/prompts";
+import { 
+  SYSTEM_PROMPT, 
+  createSystemPromptWithMaterials
+} from "@/lib/prompts";
 import { ERROR_MESSAGES, IMAGE_CONFIG, CHAT_CONFIG } from "@/lib/constants";
 import { ChatRequest } from "@/lib/types";
 import { analyzeMaterialRequest, fetchMaterials } from "@/lib/materials";
@@ -43,19 +46,19 @@ export async function POST(request: Request): Promise<NextResponse | Response> {
 
     const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
     const materialAnalysis = await analyzeMaterialRequest(trimmedMessage, genAI);
+    
+    let systemPromptWithContext = SYSTEM_PROMPT;
     let materials = null;
 
-    if (materialAnalysis.isRequest) {
-      materials = await fetchMaterials(
-        materialAnalysis.subject,
-        materialAnalysis.type
-      );
+    if (materialAnalysis.isRequest && materialAnalysis.subject) {
+      materials = await fetchMaterials(materialAnalysis.subject, materialAnalysis.type);
+      
+      if (materials && materials.length > 0) {
+        systemPromptWithContext = createSystemPromptWithMaterials(materials, materialAnalysis.subject);
+      }
     }
 
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-    const systemPromptWithContext = materials && materials.length > 0
-      ? createSystemPromptWithMaterials(materials, materialAnalysis.subject || "ekonomi")
-      : SYSTEM_PROMPT;
 
     const parts: GeminiPart[] = [
       { text: `${systemPromptWithContext}\n\nUser message: ${trimmedMessage || "Please analyze this image."}` },
@@ -156,21 +159,39 @@ function parseImageData(image: string): ParsedImageData | null {
 
     const mimeType = mimeMatch[1];
 
-    if (!(IMAGE_CONFIG.VALID_TYPES as readonly string[]).includes(mimeType)) {
+    if (!IMAGE_CONFIG.VALID_TYPES.includes(mimeType as (typeof IMAGE_CONFIG.VALID_TYPES)[number])) {
       return null;
     }
 
-    return { mimeType, data: base64Data };
-  } catch {
+    const buffer = Buffer.from(base64Data, 'base64');
+    if (buffer.length > IMAGE_CONFIG.MAX_SIZE) {
+      return null;
+    }
+
+    return {
+      mimeType,
+      data: base64Data,
+    };
+  } catch (error) {
+    console.error("Error parsing image data:", error);
     return null;
   }
 }
 
 function handleApiError(error: unknown): NextResponse<ApiErrorResponse> {
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  
+  if (errorMessage.includes("API key")) {
+    return NextResponse.json(
+      { error: ERROR_MESSAGES.INVALID_API_KEY },
+      { status: 401 }
+    );
+  }
+
   return NextResponse.json(
     {
       error: ERROR_MESSAGES.SERVER_ERROR,
-      details: process.env.NODE_ENV === "development" ? String(error) : undefined,
+      details: process.env.NODE_ENV === "development" ? errorMessage : undefined,
     },
     { status: 500 }
   );
