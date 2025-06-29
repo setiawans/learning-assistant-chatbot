@@ -16,7 +16,7 @@ export const CHAT_CONFIG = {
 
 export const MATERIALS_CONFIG = {
   MAX_MATERIALS_PER_REQUEST: 5,
-  AVAILABLE_SUBJECTS: ['ekonomi'] as const,
+  AVAILABLE_SUBJECTS: ['ekonomi', 'fisika'] as const,
   AVAILABLE_TYPES: ['video', 'article', 'book', 'course', 'exercise'] as const,
 } as const;
 

@@ -22,9 +22,18 @@ const typeColors = {
     exercise: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
 };
 
+const typeDisplayNames = {
+    video: 'Video',
+    article: 'Article',
+    book: 'Book',
+    course: 'Course',
+    exercise: 'Exercise',
+};
+
 export default function MaterialCard({ material }: MaterialCardProps) {
     const IconComponent = typeIcons[material.type];
     const typeColorClass = typeColors[material.type];
+    const typeDisplayName = typeDisplayNames[material.type]; 
     const [imageError, setImageError] = useState(false);
 
     const handleClick = () => {
@@ -48,7 +57,7 @@ export default function MaterialCard({ material }: MaterialCardProps) {
             onKeyDown={handleKeyDown}
             tabIndex={0}
             role="button"
-            aria-label={`Open ${material.title} - ${material.type}`}
+            aria-label={`Open ${material.title} - ${typeDisplayName}`}
             className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-xl p-4 hover:bg-slate-700/50 hover:border-cyan-500/50 transition-all duration-300 cursor-pointer group focus:outline-none focus:ring-2 focus:ring-cyan-500/50 h-full flex flex-col"
         >
             <div className="w-full h-32 bg-slate-700 rounded-lg overflow-hidden relative mb-3 flex-shrink-0">
@@ -82,7 +91,7 @@ export default function MaterialCard({ material }: MaterialCardProps) {
                 <div className="space-y-2 mt-auto">
                     <div className="flex items-center justify-between">
                         <span className={`px-2 py-1 rounded-md text-xs font-medium border ${typeColorClass}`}>
-                            {material.type}
+                            {typeDisplayName}
                         </span>
 
                         {material.duration && (
